@@ -1,14 +1,16 @@
 import { useLocation, useHistory } from "react-router-dom";
 import { NavBar, CheckList, Button, Toast } from "antd-mobile";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 const { Item } = CheckList;
-const inventoryData = JSON.parse(sessionStorage.getItem("uploadData"));
+// const inventoryData = JSON.parse(sessionStorage.getItem("uploadData"));
 const commonStyle = { color: "#f60" };
+
+// console.log(inventoryData);
 
 export default () => {
   const history = useHistory();
-  const [inventory, setInventory] = useState([inventoryData]);
+  const [inventory, setInventory] = useState([]);
   const [checkValue, setCheckValue] = useState([]);
   const back = () => {
     history.go(-1);
@@ -18,7 +20,12 @@ export default () => {
     setCheckValue(values);
   };
 
-    const handleClick = async () => {
+  const handleClick = async () => {
+    if (!checkValue.length) {
+      return Toast.show({
+        content: "请至少选择一条",
+      });
+    }
     const filterData = inventory.filter(
       (item) => item.billId === checkValue[0]
     );
@@ -40,20 +47,24 @@ export default () => {
     }
   };
 
+  useEffect(() => {
+    const inventoryData = JSON.parse(sessionStorage.getItem("uploadData"));
+    setInventory([inventoryData]);
+  }, []);
   return (
     <>
       <div style={{ height: "100vh" }}>
         <NavBar back="返回" onBack={back}>
           数据上传
         </NavBar>
-        <div style={{ minHeight: "80vh" }}>
+        <div style={{ height: "70vh" }}>
           <CheckList value={checkValue} onChange={handleChange}>
             {inventory.map((item) => (
-              <Item key={item.billId} value={item.billId}>
+              <Item key={item?.billId} value={item?.billId}>
                 <span style={commonStyle}>单据类型: </span>
-                {item.type},<span style={commonStyle}>单据编号:</span>
-                {item.billId},<span style={commonStyle}>已扫数量: </span>
-                {item.quantity}
+                {item?.type},<span style={commonStyle}>单据编号:</span>
+                {item?.billId},<span style={commonStyle}>已扫数量: </span>
+                {item?.quantity}
               </Item>
             ))}
           </CheckList>

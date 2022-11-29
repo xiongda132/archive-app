@@ -10,6 +10,7 @@ import {
   List,
   TextArea,
   NavBar,
+  reduceMotion,
 } from "antd-mobile";
 import { List as VirtualizedList, AutoSizer } from "react-virtualized";
 import { useLocation, useHistory, Link } from "react-router-dom";
@@ -63,18 +64,26 @@ const textStyle = {
 };
 
 const BillModal = ({ allData, setRadioValue }) => {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(allData[0].billId);
+  console.log(value);
   const handleChange = (value) => {
+    console.log(value);
     setValue(value);
-    setRadioValue(value);
+    // setRadioValue(value);
   };
+  console.log(allData[0].billId);
+
+  useEffect(() => {
+    console.log(value);
+    setRadioValue(value);
+  }, [value]);
+
   return (
     <div
       style={{
         display: "flex",
         flexWrap: "wrap",
         height: "40vh",
-        overflow: "auto",
         justifyContent: "center",
       }}
     >
@@ -101,7 +110,6 @@ const ScanModal = ({ setTextValue }) => {
 
   useEffect(() => {
     const area = document.querySelector("#textArea");
-    console.log(area.__proto__);
     area.focus();
   }, []);
   return (
@@ -121,9 +129,11 @@ export default () => {
   const history = useHistory();
   const auth = useAuth();
   const [radioValue, setRadioValue] = useState("");
+  const [storageValue, setStorageValue] = useState("");
+  console.log(radioValue);
   const radioRef = useRef("");
   const [textValue, setTextValue] = useState("");
-  console.log(textValue);
+  // console.log(textValue);
   const textRef = useRef("");
   const [open, setOpen] = useState(false);
   const [allData, setAllData] = useState([]);
@@ -145,11 +155,12 @@ export default () => {
       title: "请选择单据",
       content: <BillModal allData={allData} setRadioValue={setRadioValue} />,
       onConfirm: async () => {
+        // radioRef.current = radioValue;
+        setStorageValue(radioRef.current);
         await handleOk();
-        Toast.show({
-          icon: "success",
-          content: "数据加载成功",
-        });
+      },
+      onCancel: async () => {
+        setRadioValue("");
       },
     });
   };
@@ -159,13 +170,30 @@ export default () => {
   };
 
   const handleOk = async () => {
+    /*  if (!radioRef.current) {
+      return Toast.show({
+        content: "请选择一个单据",
+      });
+    } else { */
     const res = await axios.post(
       "http://47.94.5.22:6302/supoin/api/archive/inventory/getCheckListDetail",
       { billId: radioRef.current }
     );
-    const resMap = res.data.data.map((item) => ({ ...item, status: 0 }));
-    setArchiveData(resMap);
-    archiveRef.current = resMap;
+    if (res.data.code === 1) {
+      const resMap = res.data.data.map((item) => ({ ...item, status: 0 }));
+      setArchiveData(resMap);
+      archiveRef.current = resMap;
+      Toast.show({
+        icon: "success",
+        content: "数据加载成功",
+      });
+    } else {
+      Toast.show({
+        icon: "error",
+        content: "加载失败",
+      });
+    }
+    // }
   };
 
   const refreshData = () => {
@@ -229,17 +257,23 @@ export default () => {
 
   useEffect(() => {
     refreshData();
+    reduceMotion();
   }, []);
 
   useEffect(() => {
+    // if (!radioValue) return;
     radioRef.current = radioValue;
+    // console.log(radioValue);
+    // console.log(radioRef.current);
   }, [radioValue]);
+
+  // console.log(radioRef.current);
 
   useEffect(() => {
     textRef.current = textValue;
   }, [textValue]);
 
-  console.log(textRef.current);
+  // console.log(textRef.current);
 
   return (
     <>
@@ -250,7 +284,7 @@ export default () => {
         <Card>
           <div className={styles.top}>
             <div style={keyStyle}>
-              盘点单号: <span style={textStyle}>{radioRef.current}</span>
+              盘点单号: <span style={textStyle}>{storageValue}</span>
             </div>
             <div>
               <Button
@@ -305,7 +339,7 @@ export default () => {
         </div>
         <div style={{ display: "flex", marginTop: 10, fontSize: 20 }}>
           <div style={{ marginLeft: 20 }}>共{archiveRef.current.length}条</div>
-          ，<div>已盘数量: {hasInventory()}</div>，
+          ，<div>已盘数量: {hasInventory()}</div>
         </div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <Button

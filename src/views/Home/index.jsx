@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import styles from "./index.module.css";
 // import { Modal, message, notification } from "antd";
-import { Modal, notification, Toast } from "antd-mobile";
+import { Modal, notification, Toast, reduceMotion } from "antd-mobile";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import downloadSvg from "./svg/download.svg";
@@ -57,6 +57,10 @@ const CLogin = (props) => {
   const handleOk = () => {
     getData();
   };
+
+  useEffect(() => {
+    reduceMotion();
+  }, []);
   return (
     <>
       <div>

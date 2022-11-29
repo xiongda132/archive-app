@@ -56,11 +56,13 @@ const myData = [
 const keyStyle = {
   color: "#f60",
   fontWeight: 900,
+  fontSize: 12,
 };
 
 const textStyle = {
   color: "black",
   fontWeight: 400,
+  fontSize: 12,
 };
 
 const BillModal = ({ allData, setRadioValue }) => {
@@ -135,7 +137,7 @@ export default () => {
   const [textValue, setTextValue] = useState("");
   // console.log(textValue);
   const textRef = useRef("");
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
   const [allData, setAllData] = useState([]);
   const [archiveData, setArchiveData] = useState([]);
   const archiveRef = useRef([]);
@@ -150,7 +152,11 @@ export default () => {
   };
 
   const handleBill = () => {
-    setOpen(true);
+    if (!allData?.length) {
+      return Toast.show({
+        content: "请先下载单据",
+      });
+    }
     Modal.confirm({
       title: "请选择单据",
       content: <BillModal allData={allData} setRadioValue={setRadioValue} />,
@@ -159,28 +165,26 @@ export default () => {
         setStorageValue(radioRef.current);
         await handleOk();
       },
-      onCancel: async () => {
-        setRadioValue("");
-      },
+      // onCancel: async () => {
+      //   setRadioValue("");
+      // },
     });
   };
 
-  const hanldeCancel = () => {
-    setOpen(false);
-  };
+  // const hanldeCancel = () => {
+  //   setOpen(false);
+  // };
 
   const handleOk = async () => {
-    /*  if (!radioRef.current) {
-      return Toast.show({
-        content: "请选择一个单据",
-      });
-    } else { */
     const res = await axios.post(
       "http://47.94.5.22:6302/supoin/api/archive/inventory/getCheckListDetail",
       { billId: radioRef.current }
     );
+    console.log(res);
     if (res.data.code === 1) {
-      const resMap = res.data.data.map((item) => ({ ...item, status: 0 }));
+      const resMap = res.data.data
+        .slice(0, 50)
+        .map((item) => ({ ...item, status: 0 }));
       setArchiveData(resMap);
       archiveRef.current = resMap;
       Toast.show({
@@ -258,6 +262,9 @@ export default () => {
   useEffect(() => {
     refreshData();
     reduceMotion();
+    return () => {
+      console.log("卸载");
+    };
   }, []);
 
   useEffect(() => {
@@ -283,16 +290,28 @@ export default () => {
         </NavBar>
         <Card>
           <div className={styles.top}>
-            <div style={keyStyle}>
-              盘点单号: <span style={textStyle}>{storageValue}</span>
+            <div
+              style={{
+                color: "#f60",
+                fontWeight: 900,
+                fontSize: 12,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <span>盘点单号:</span>
+              <span style={{ color: "#000", fonstSize: 12, fontWeight: 400 }}>
+                {storageValue}
+              </span>
             </div>
-            <div>
+            <div style={{ display: "flex", justifyContent: "center" }}>
               <Button
                 size="mini"
                 onClick={handleScan}
                 color="danger"
                 style={{ marginRight: 10 }}
-                disabled={archiveData.length <= 0}
+                disabled={!archiveData.length}
               >
                 开始扫描
               </Button>
@@ -313,9 +332,9 @@ export default () => {
               <List.Item key={item.name}>
                 <div style={{ float: "right", fontWeight: 900 }}>
                   {item.status === 0 ? (
-                    <div style={{ color: "red" }}>未盘</div>
+                    <div style={{ color: "red", fontSize: 12 }}>未盘</div>
                   ) : (
-                    <div style={{ color: "green" }}>已盘</div>
+                    <div style={{ color: "green", fontSize: 12 }}>已盘</div>
                   )}
                 </div>
                 <div style={keyStyle}>
@@ -337,19 +356,30 @@ export default () => {
             ))}
           </List>
         </div>
-        <div style={{ display: "flex", marginTop: 10, fontSize: 20 }}>
-          <div style={{ marginLeft: 20 }}>共{archiveRef.current.length}条</div>
-          ，<div>已盘数量: {hasInventory()}</div>
-        </div>
-        <div style={{ textAlign: "center", marginTop: 20 }}>
-          <Button
-            size="large"
-            onClick={handleReset}
-            color="warning"
-            disabled={archiveData.length <= 0}
-          >
-            重新盘点
-          </Button>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 10,
+            fontSize: 12,
+            justifyContent: "space-around",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ marginLeft: 20 }}>
+              共{archiveRef.current.length}条
+            </span>
+            ，<span>已盘数量: {hasInventory()}</span>
+          </div>
+          <div>
+            <Button
+              size="mini"
+              onClick={handleReset}
+              color="warning"
+              disabled={!archiveData.length}
+            >
+              重新盘点
+            </Button>
+          </div>
         </div>
       </div>
     </>

@@ -58,7 +58,10 @@ const LoginFormContent = () => {
           </Button>
         </Form.Item>
       </Form> */}
-      <Form initialValues={{}} onFinish={onFinish}>
+      <Form
+        initialValues={{ userId: "admin", pwd: "123456" }}
+        onFinish={onFinish}
+      >
         <Item name="userId">
           <Input placeholder="请输入用户名"></Input>
         </Item>

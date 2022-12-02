@@ -60,7 +60,7 @@ export default () => {
         <div style={{ height: "70vh" }}>
           <CheckList value={checkValue} onChange={handleChange}>
             {inventory.map((item) => (
-              <Item key={item?.billId} value={item?.billId}>
+              <Item key={item?.billId || Math.random()} value={item?.billId}>
                 <span style={commonStyle}>单据类型: </span>
                 {item?.type},<span style={commonStyle}>单据编号:</span>
                 {item?.billId},<span style={commonStyle}>已扫数量: </span>

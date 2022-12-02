@@ -67,16 +67,16 @@ const textStyle = {
 
 const BillModal = ({ allData, setRadioValue }) => {
   const [value, setValue] = useState(allData[0].billId);
-  console.log(value);
+  // console.log(value);
   const handleChange = (value) => {
-    console.log(value);
+    // console.log(value);
     setValue(value);
     // setRadioValue(value);
   };
-  console.log(allData[0].billId);
+  // console.log(allData[0].billId);
 
   useEffect(() => {
-    console.log(value);
+    // console.log(value);
     setRadioValue(value);
   }, [value]);
 
@@ -102,8 +102,8 @@ const BillModal = ({ allData, setRadioValue }) => {
 
 const ScanModal = ({ setTextValue }) => {
   const [value, setValue] = useState("");
-  console.log(value.split("\n"));
-  console.log(value);
+  // console.log(value.split("\n"));
+  // console.log(value);
   const handleChange = (value) => {
     // value += "\n";
     setValue(value);
@@ -132,7 +132,7 @@ export default () => {
   const auth = useAuth();
   const [radioValue, setRadioValue] = useState("");
   const [storageValue, setStorageValue] = useState("");
-  console.log(radioValue);
+  // console.log(radioValue);
   const radioRef = useRef("");
   const [textValue, setTextValue] = useState("");
   // console.log(textValue);
@@ -141,6 +141,7 @@ export default () => {
   const [allData, setAllData] = useState([]);
   const [archiveData, setArchiveData] = useState([]);
   const archiveRef = useRef([]);
+  const diifDataRef = useRef();
   // const valueRef = useRef("");
 
   const hasInventory = () => {
@@ -148,7 +149,15 @@ export default () => {
   };
 
   const back = () => {
-    history.goBack();
+    if (storageValue || archiveData.length) {
+      const storageData = {
+        key: storageValue || "",
+        data: archiveData || [],
+        dataRef: archiveRef.current || [],
+      };
+      sessionStorage.setItem("storageKey", JSON.stringify(storageData));
+      history.goBack();
+    }
   };
 
   const handleBill = () => {
@@ -163,7 +172,7 @@ export default () => {
       onConfirm: async () => {
         // radioRef.current = radioValue;
         setStorageValue(radioRef.current);
-        await handleOk();
+        /* await  */ handleOk();
       },
       // onCancel: async () => {
       //   setRadioValue("");
@@ -180,10 +189,9 @@ export default () => {
       "http://47.94.5.22:6302/supoin/api/archive/inventory/getCheckListDetail",
       { billId: radioRef.current }
     );
-    console.log(res);
     if (res.data.code === 1) {
       const resMap = res.data.data
-        .slice(0, 50)
+        /* .slice(0, 50) */
         .map((item) => ({ ...item, status: 0 }));
       setArchiveData(resMap);
       archiveRef.current = resMap;
@@ -203,6 +211,15 @@ export default () => {
   const refreshData = () => {
     const data = JSON.parse(sessionStorage.getItem("downloadData"));
     setAllData(data);
+  };
+
+  const getStorageData = () => {
+    const storageData = JSON.parse(sessionStorage.getItem("storageKey"));
+    if (storageData) {
+      setStorageValue(storageData.key);
+      setArchiveData(storageData.data);
+      archiveRef.current = storageData.dataRef;
+    }
   };
 
   const handleReset = () => {
@@ -241,7 +258,7 @@ export default () => {
         .filter((item) => item.status === 1)
         .map((item) => item.archiveId);
       const inventoryData = {
-        billId: radioRef.current,
+        billId: storageValue,
         userId: sessionStorage.getItem("userId"),
         archiveList: archiveData,
         type: "盘点单",
@@ -249,6 +266,7 @@ export default () => {
       };
       sessionStorage.setItem("uploadData", JSON.stringify(inventoryData));
       setArchiveData(diffData);
+      diifDataRef.current = diffData;
       Toast.show({
         content: `完成盘点， 已盘${hasData.length}条`,
       });
@@ -262,25 +280,19 @@ export default () => {
   useEffect(() => {
     refreshData();
     reduceMotion();
-    return () => {
-      console.log("卸载");
-    };
+    getStorageData();
+    // return () => {
+    //   console.log("退出1");
+    // };
   }, []);
 
   useEffect(() => {
-    // if (!radioValue) return;
     radioRef.current = radioValue;
-    // console.log(radioValue);
-    // console.log(radioRef.current);
   }, [radioValue]);
-
-  // console.log(radioRef.current);
 
   useEffect(() => {
     textRef.current = textValue;
   }, [textValue]);
-
-  // console.log(textRef.current);
 
   return (
     <>

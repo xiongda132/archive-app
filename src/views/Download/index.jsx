@@ -9,17 +9,27 @@ export default () => {
   const onClick = () => {
     history.go(-1);
   };
+
+  const getInventoryData = async () => {
+    const res = await axios.post(
+      "http://47.94.5.22:6302/supoin/api/archive/inventory/getCheckList"
+    );
+    // console.log(res);
+    //   auth.download().setData(res.data.data);
+    sessionStorage.setItem("downloadData", JSON.stringify(res.data.data));
+  };
+
+  // const getLendData = async () => { 
+  //   const res = await axios.post(
+  //     "http://47.94.5.22:6302/supoin/api/archive/lend/getLendBillList"
+  //   );
+  //   console.log(res);
+  //   sessionStorage.setItem("lendData", JSON.stringify(res.data.data));
+  // }
   useEffect(() => {
-    const getData = async () => {
-      const res = await axios.post(
-        "http://47.94.5.22:6302/supoin/api/archive/inventory/getCheckList"
-      );
-      console.log(res);
-      //   auth.download().setData(res.data.data);
-      sessionStorage.setItem("downloadData", JSON.stringify(res.data.data));
-    };
-    getData();
-    console.log(auth.download().returnData());
+    getInventoryData();
+    // getLendData()
+    // console.log(auth.download().returnData());
   }, []);
   return (
     <>

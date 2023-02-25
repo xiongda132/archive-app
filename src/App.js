@@ -13,6 +13,7 @@ import Download from "./views/Download";
 import Upload from "./views/Upload";
 import { getAuthentication } from "./utils/auth";
 import ProvideAuth from "./auth/ProvideAuth";
+import Lend from "./views/Lend";
 
 function App() {
   return (
@@ -28,6 +29,9 @@ function App() {
             </Route>
             <Route path="/scan">
               <Scan />
+            </Route>
+            <Route path="/lend">
+              <Lend />
             </Route>
             <Route path="/upload">
               <Upload />

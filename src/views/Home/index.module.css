@@ -33,7 +33,8 @@
 
 .download,
 .scan,
-.upload {
+.upload,
+.lend {
   width: 50%;
   font-size: 30px;
   display: flex;

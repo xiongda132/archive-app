@@ -20,41 +20,6 @@ import { pdaConfig, pdaStart, padStop, queryPdaData } from "api/pda";
 import dayjs from "dayjs";
 const { Group } = Radio;
 
-// const myData = [
-//   {
-//     status: 0,
-//     archiveId: "FL9414100001",
-//     epc: "010003202210140000004424",
-//     className: "生产线档案",
-//     orgName: "研发中心",
-//     placeName: "A库房01区02列01节01层左侧",
-//   },
-//   {
-//     status: 1,
-//     archiveId: "FL9414100002",
-//     epc: "010003202210140000004425",
-//     className: "生产线档案",
-//     orgName: "研发中心",
-//     placeName: "A库房01区02列01节01层左侧",
-//   },
-//   {
-//     status: 0,
-//     archiveId: "FL9414100003",
-//     epc: "010003202210140000004424",
-//     className: "生产线档案",
-//     orgName: "研发中心",
-//     placeName: "A库房01区02列01节01层左侧",
-//   },
-//   {
-//     status: 1,
-//     archiveId: "FL9414100004    ",
-//     epc: "010003202210140000004425",
-//     className: "生产线档案",
-//     orgName: "研发中心",
-//     placeName: "A库房01区02列01节01层左侧",
-//   },
-// ];
-
 const keyStyle = {
   color: "#f60",
   fontWeight: 900,
@@ -69,16 +34,11 @@ const textStyle = {
 
 const BillModal = ({ allData, setRadioValue }) => {
   const [value, setValue] = useState(allData[0].billId);
-  // console.log(value);
   const handleChange = (value) => {
-    // console.log(value);
     setValue(value);
-    // setRadioValue(value);
   };
-  // console.log(allData[0].billId);
 
   useEffect(() => {
-    // console.log(value);
     setRadioValue(value);
   }, [value]);
 
@@ -102,33 +62,6 @@ const BillModal = ({ allData, setRadioValue }) => {
   );
 };
 
-// const ScanModal = ({ setTextValue }) => {
-//   const [value, setValue] = useState("");
-//   // console.log(value.split("\n"));
-//   // console.log(value);
-//   const handleChange = (value) => {
-//     // value += "\n";
-//     setValue(value);
-//     setTextValue(value);
-//   };
-
-//   useEffect(() => {
-//     const area = document.querySelector("#textArea");
-//     area.focus();
-//   }, []);
-//   return (
-//     <div>
-//       <TextArea
-//         id="textArea"
-//         placeholder="请开始扫描"
-//         value={value}
-//         autoSize={{ minRows: 5, maxRows: 10 }}
-//         onChange={handleChange}
-//       ></TextArea>
-//     </div>
-//   );
-// };
-
 export default () => {
   const history = useHistory();
   const auth = useAuth();
@@ -149,14 +82,6 @@ export default () => {
   };
 
   const handleBack = () => {
-    // if (storageValue || archiveData.length) {
-    //   const storageData = {
-    //     key: storageValue || "",
-    //     data: archiveData || [],
-    //     dataRef: archiveRef.current || [],
-    //   };
-    //   sessionStorage.setItem("storageKey", JSON.stringify(storageData));
-    // }
     history.goBack();
   };
 
@@ -170,29 +95,20 @@ export default () => {
       title: "请选择单据",
       content: <BillModal allData={allData} setRadioValue={setRadioValue} />,
       onConfirm: async () => {
-        // radioRef.current = radioValue;
         setStorageValue(radioRef.current);
-        /* await  */ handleOk();
+        handleOk();
       },
-      // onCancel: async () => {
-      //   setRadioValue("");
-      // },
     });
   };
 
-  // const hanldeCancel = () => {
-  //   setOpen(false);
-  // };
-
   const handleOk = async () => {
     const res = await axios.post(
-      "http://47.94.5.22:6302/supoin/api/archive/inventory/getCheckListDetail",
+      "http://47.94.5.22:6302/supoin/api/archive/lend/getLendBillDetail",
       { billId: radioRef.current }
     );
+    console.log(res);
     if (res.data.code === 1) {
-      const resMap = res.data.data
-        /* .slice(0, 50) */
-        .map((item) => ({ ...item, status: 0 }));
+      const resMap = res.data.data.map((item) => ({ ...item, status: 0 }));
       setArchiveData(resMap);
       archiveRef.current = resMap;
       Toast.show({
@@ -205,11 +121,10 @@ export default () => {
         content: "加载失败",
       });
     }
-    // }
   };
 
   const getData = () => {
-    const data = JSON.parse(sessionStorage.getItem("downloadData"));
+    const data = JSON.parse(sessionStorage.getItem("lendData"));
     setAllData(data);
   };
 
@@ -235,13 +150,6 @@ export default () => {
     Toast.show({
       content: "请使用RFID设备进行扫描",
     });
-    // Modal.confirm({
-    //   title: "扫描详情",
-    //   content: <ScanModal setTextValue={setTextValue}></ScanModal>,
-    //   onConfirm: async () => {
-    //     await getDiff();
-    //   },
-    // });
   };
 
   const getDiff = () => {
@@ -294,7 +202,6 @@ export default () => {
         startTime: configTime.current,
       });
       if (pdaStartRes.code === 1) {
-        // setPdaReady(true);
         console.log("初始化PDA成功");
       } else {
         Toast.show({
@@ -349,8 +256,6 @@ export default () => {
   }, [initPda, initDevicePlus]);
 
   const timer = useRef(null);
-  // const [loading, setLoading] = useState(true);
-  // const [epcList, setEpcList] = useState([]);
   const refreshData = useCallback(async () => {
     if (timer.current) clearTimeout(timer.current);
     const res = await queryPdaData({
@@ -383,12 +288,10 @@ export default () => {
         console.log(ArchiveList);
         return ArchiveList;
       });
-      // setLoading(false);
       if (timer.current !== null) {
         timer.current = setTimeout(refreshData, 200);
       }
     } else {
-      // console.log("res", res);
       if (timer.current !== null) {
         timer.current = setTimeout(refreshData, 200);
       }
@@ -404,24 +307,12 @@ export default () => {
         billId: storageValue,
         userId: sessionStorage.getItem("userId"),
         archiveList: diffData,
-        type: "盘点单",
+        type: "借阅出库单",
         quantity: diffData.length || 0,
       };
-      sessionStorage.setItem("uploadData", JSON.stringify(inventoryData));
-      // setArchiveData(diffData);
-      // diifDataRef.current = diffData;
-      // Toast.show({
-      //   content: `完成盘点， 已盘${isInventory.length}条`,
-      // });
+      sessionStorage.setItem("uploadLendData", JSON.stringify(inventoryData));
     }
   }, [isInventory]);
-
-  // const stopScan = () => {
-  //   if (timer.current) {
-  //     clearTimeout(timer.current);
-  //     // timer.current = null;
-  //   }
-  // };
 
   useEffect(() => {
     if (pdaReady) {
@@ -457,7 +348,7 @@ export default () => {
     <>
       <div className={styles.wrapper}>
         <NavBar back="返回" onBack={handleBack}>
-          盘点扫描
+          借阅出库
         </NavBar>
         <Card>
           <div className={styles.top}>
@@ -471,7 +362,7 @@ export default () => {
                 justifyContent: "center",
               }}
             >
-              <span>盘点单号:</span>
+              <span>借阅单号:</span>
               <span style={{ color: "#000", fonstSize: 12, fontWeight: 400 }}>
                 {storageValue}
               </span>
@@ -503,9 +394,9 @@ export default () => {
               <List.Item key={item.name}>
                 <div style={{ float: "right", fontWeight: 900 }}>
                   {item.status === 0 ? (
-                    <div style={{ color: "red", fontSize: 12 }}>未盘</div>
+                    <div style={{ color: "red", fontSize: 12 }}>在库</div>
                   ) : (
-                    <div style={{ color: "green", fontSize: 12 }}>已盘</div>
+                    <div style={{ color: "green", fontSize: 12 }}>已出库</div>
                   )}
                 </div>
                 <div style={keyStyle}>
@@ -539,18 +430,9 @@ export default () => {
             <span style={{ marginLeft: 20 }}>
               共{archiveRef.current.length}条
             </span>
-            ，<span>已盘数量: {hasInventory()}</span>
+            ，<span>已出库数量: {hasInventory()}</span>
           </div>
-          <div>
-            {/* <Button
-              size="mini"
-              onClick={stopScan}
-              color="warning"
-              disabled={!archiveData.length}
-            >
-              保存扫描结果
-            </Button> */}
-          </div>
+          <div></div>
         </div>
       </div>
     </>
